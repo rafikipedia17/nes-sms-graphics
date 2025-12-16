@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="author" content="RafikiPedia">
+    <title>Understanding graphics in NES and Sega Master System</title>
+    <style>
+        /* Basic styling for readability */
+        body { font-family: sans-serif; line-height: 1.6; padding: 30px; }
+        h1, h2 { border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+        h2 { color: #012a47 }
+        h3 { color: #0070c0 }
+        h4 { color: #00b0f0 }
+        blockquote { margin: 15px 0; padding: 10px 20px; border-left: 5px solid #ccc; background: #f9f9f9; }
+        table { border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background-color: #f2f2f2; }
+        .thick-right-border { border-right: 2px solid #aaa; }
+        .align-left { text-align: left; }
+        pre { background-color: #eee; padding: 10px; overflow-x: auto; }
+        .note { font-style: italic; }
+        figure { justify-items: center; }
+        img { display: block; }
+        figcaption, caption { font-style: italic; }
+        code { font-size: 1.1rem; color: #1f9610}
+        footer { justify-items: center; border-top: 2px solid #272727;}
+    </style>
+</head>
+<body>
+    <h1>UNDERSTANDING GRAPHICS IN NES AND SEGA MASTER SYSTEM</h1>
+    <p>by <strong>RafikiPedia</strong></p>
+    
+    <h2>INTRODUCTION</h2>
+    <section>
+        <p>I've written this document in order to show and explain how these two mythical consoles were able to run such wonderful games, despite of their hardware limitations. Or better said, <em>making the most out</em> of their hardware limitations.</p>
+    
+        <p>I've splitted this material into two big sections concerning each one of the consoles and later going further into each of their features. I've tried to be as clear as possible, also bringing up screenshots and animations of every mentioned example.</p>
+    
+        <p>If you find this document useful, please let me know. Writing it took me a lot of time, so the least that I can beg is a little mention. Feel free to send me an email</a> for any corrections and/or comments, but please do not ask me for any ROMs. That's on your own account and I don't want to get involved in any kind of legal troubles.</p>
+    
+        <p>Well, enough of presentations. Let's start by reviewing some common terms that are broadly used in graphics:</p>
+    </section>
+
+    <h2>GLOSSARY</h2>
+    <section>
+        <dl>
+            <dt><strong>Bit</strong></dt>
+            <dd>Stands for <em>Binary digIT</em>. It's the smallest possible data unit, the principle of the binary system and the foundation of the whole world of electronics. Just <code>1</code> and <code>0</code>. On, off. Yes, no... Well, you get the idea.</dd>
+
+            <dt><strong>Bpp</strong></dt>
+            <dd>Means <em>Bits Per Pixel</em>. Very straightforward: it specifies how many bits are needed to represent the color of a single pixel. In other words, the total combinations of colors is <code>2^n</code>, being <code>n</code> the number of <strong>bpp</strong>. Classic videogames consoles tipically have between 2 and 4 bpp: NES has 2 (4 colors per pixel) and Sega Master System has 4 (16 colors per pixel).</dd>
+            
+            <dt><strong>Byte</strong></dt>
+            <dd>Stands for <em>BinarY TuplE</em> (at least that's what some people claim). A byte is simply a sequence of 8 bits, i.e. an 8-element combination of ones and zeroes. Prefixes can be added to it and thus forming <em>kilobytes</em>, <em>megabytes</em>, <em>gigabytes</em>, <em>terabytes</em>...
+                <blockquote class="note">NOTE: This nomenclature is technically inaccurate, for "kilo" means "one thousand" and 1 kilobyte strictly equals 1024 bytes (2^10). But that's the way it's been named (who I am to blow against the wind?)</blockquote></dd>
+            
+            <dt><strong>Hexadecimal</strong></dt>
+            <dd>(Or just <strong>hex</strong> for friends). <em>Hexadecimal</em> means "sixteen" and is a numerical system just as binary and decimal, widely used in electronics - and romhacking, of course. This system uses digits from <code>0</code> to <code>9</code> but also letters from <code>A</code> to <code>F</code> (upper or lowercase, is the same), where <code>A</code> equals the decimal 10, <code>B</code> is 11, <code>C</code> is 12... up to <code>F</code> that equals 15. Then it begins with two digits: <code>10</code> equals 16, <code>11</code> is 17, and so on. Hex numbers in ROMs commonly have 2 digits and, in order not to mess around with decimals, the <code>$</code> or <code>0x</code> prefixes are used. Besides, hex numbers are also frequent to code colors - for example, <code>#08A1FC</code>.
+                <blockquote class="note">NOTE: Windows Calculator has embedded a practical system converter. We are utilizing it to make calculations in this document.</blockquote>
+            </dd>
+            
+            <dt><strong>Pixel</strong></dt>
+            <dd>Stands for <em>PICture ELement</em>. This shouldn't need any explanation, as today we see pixels everywhere. Anyway, it's worth mentioning that a pixel <em>is not an absolute unit</em> as meters or inches - its size depends on the device. The size of a single pixel in your TV screen is <em>actually</em> bigger than a pixel in your smartphone, even when both resolutions are equal.</dd>
+
+            <dt><strong>Scanline</strong></dt>
+            <dd>It's an horizontal line of pixels, and many of these lines draw the image shown on screen. Hence, a screen with a resolution of 640x480 has 480 scanlines.</dd>
+            
+            <dt><strong>Tile</strong></dt>
+            <dd>It's a graphical square unit. Its size can be 8x8, 16x16, 32x32, 64x64. Tiles in romhacking refer mostly to <strong>8x8</strong> pixels.</dd>
+        </dl>
+    </section>
+
+    <hr>
+    <hr>
+
+    <h2>NES</h2>
+    <section>  
+        <p>Given that a TV was involved, the NES system had a resolution of 256x240 for PAL and 256x224 for NTSC. The vertical 16 px difference is because NTSC cuts off 8 pixels from the top and bottom rows; these areas were not very important, as they used to be just background. Therefore, the standard NES resolution is considered to be <strong>256x240</strong>.</p>
+    
+        <p>All the heavy graphic work inside NES was done by this little guy with 10 KB of memory, the <strong>PPU</strong> (<em>Picture Processing Unit</em>). The console has just 2 graphic layers - one for the sprites and one for the background - and a palette of <strong>54 colors</strong> in total.</p>
+    
+        <figure>
+            <img src="img/01-01.png" alt="NES colors indexes">
+            <figcaption>NES colors indexes</figcaption>
+        </figure>
+    
+        <p>"Wait a minute! There are 64 there!"</p>
+    
+        <p>Right. Even though the indexes are 64, the <em>real</em> colors are fewer. As you can see, both whites are identical (<code>$20</code> and <code>$30</code>), black is repeated eight times and there is a "darker-than-black" index (<code>$0D</code>) that wasn't used because it could bring problems to TVs. So we are left with 54 colors. The truth is, NES can only reproduce up to <strong>13 colors simultaneously for each layer</strong>. These palettes are divided into <strong>4 subpalettes of 3 colors plus one backdrop color</strong>, which has the first index and must be repeated in every subpalette. In the sprites layer, this backdrop color is transparency; in the background layer, it's some default color (a sky color, for example).</p>
+    
+        <table>
+            <caption>Subpalettes scheme</caption>
+            <thead>
+                <th>Layer</th>
+                <th class="thick-right-border">Hex</th>
+                <th colspan="4" class="thick-right-border">Palette 0</th>
+                <th colspan="4">Palette 1</th>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="2" class="thick-right-border"></td>
+                    <td><code>$0</code></td>
+                    <td><code>$1</code></td>
+                    <td><code>$2</code></td>
+                    <td class="thick-right-border"><code>$3</code></td>
+                    <td><code>$4</code></td>
+                    <td><code>$5</code></td>
+                    <td><code>$6</code></td>
+                    <td><code>$7</code></td>
+                </tr>
+                <tr>
+                    <td><em>Background</em></td>
+                    <td class="thick-right-border"><code>$3F00</code></td>
+                    <td><em>Transparent</em></td>
+                    <td>Color 1</td>
+                    <td>Color 2</td>
+                    <td class="thick-right-border">Color 3</td>
+                    <td><em>Transparent</em></td>
+                    <td>Color 4</td>
+                    <td>Color 5</td>
+                    <td>Color 6</td>
+                </tr>
+                <tr>
+                    <td><em>Sprites</em></td>
+                    <td class="thick-right-border"><code>$3F10</code></td>
+                    <td><em>Default</em></td>
+                    <td>Color 1</td>
+                    <td>Color 2</td>
+                    <td class="thick-right-border">Color 3</td>
+                    <td><em>Default</em></td>
+                    <td>Color 4</td>
+                    <td>Color 5</td>
+                    <td>Color 6</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <table>
+            <caption>Subpalettes scheme</caption>
+            <thead>
+                <th>Layer</th>
+                <th class="thick-right-border">Hex</th>
+                <th colspan="4" class="thick-right-border">Palette 2</th>
+                <th colspan="4">Palette 3</th>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="2" class="thick-right-border"></td>
+                    <td><code>$8</code></td>
+                    <td><code>$9</code></td>
+                    <td><code>$A</code></td>
+                    <td class="thick-right-border"><code>$B</code></td>
+                    <td><code>$C</code></td>
+                    <td><code>$D</code></td>
+                    <td><code>$E</code></td>
+                    <td><code>$F</code></td>
+                </tr>
+                <tr>
+                    <td><em>Background</em></td>
+                    <td class="thick-right-border"><code>$3F00</code></td>
+                    <td><em>Transparent</em></td>
+                    <td>Color 7</td>
+                    <td>Color 8</td>
+                    <td class="thick-right-border">Color 9</td>
+                    <td><em>Transparent</em></td>
+                    <td>Color 10</td>
+                    <td>Color 11</td>
+                    <td>Color 12</td>
+                </tr>
+                <tr>
+                    <td><em>Sprites</em></td>
+                    <td class="thick-right-border"><code>$3F10</code></td>
+                    <td><em>Default</em></td>
+                    <td>Color 7</td>
+                    <td>Color 8</td>
+                    <td class="thick-right-border">Color 9</td>
+                    <td><em>Default</em></td>
+                    <td>Color 10</td>
+                    <td>Color 11</td>
+                    <td>Color 12</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <blockquote class="note">NOTE: Colors aren't necessarily the same in the background and in the sprites.</blockquote>
+
+        <p>Hence the 13 colors for each layer. Background and sprite palettes are located in <strong>VRAM</strong> (<em>Video Random Access Memory</em> - a 2 KB part of the PPU) at the <code>$3F00</code> and <code>$3F10</code> offsets respectively and color indexes occupy just 1 byte.</p>
+    
+        <p>Now is when we're going to split our analysis, starting with the background because it is more difficult. Fear not, because once we've learned about backgrounds, the sprites part will be easier.</p>
+    </section>
+
+    <hr>
+
+    <h3>BACKGROUND</h3>
+    <section>
+        <p>Let's take the <em>DuckTales</em> game as an example:</p>
+    
+        <figure>
+            <img src="img/02-01.png" alt="Screenshot from DuckTales">
+            <figcaption>Screenshot from DuckTales</figcaption>
+        </figure>
+    
+        <p>After removing the sprites, we're left with this:</p>
+    
+        <figure>
+            <img src="img/02-02.png" alt=Hey, where did Scrooge go?">
+            <figcaption>Hey, where did Scrooge go??</figcaption>
+        </figure>
+    
+        <p>As it was stated before, backgrounds have 4 subpalettes just like sprites, but in this case the shared one is a backdrop color. The palette of our picture is as follows:</p>
+    
+        <figure>
+            <img src="img/02-03.png" alt="Background palettes">
+            <figcaption>Background palettes - the last four rows are from the sprites, so we'll just ignore them for now</figcaption>
+        </figure>
+    
+        <p>We can clearly see that there are 4 palettes and just 9 colors: <code>$00</code>, <code>$10</code>, <code>$1A</code>, <code>$2A</code>, <code>$11</code>, <code>$0A</code>, <code>$08</code>, <code>$17</code> and <code>$0F</code>. We can also observe that the backdrop color is precisely <code>$0F</code>, the first index.</p>
+    
+        <p>Backgrounds are made up from tiles of <strong>8x8 px</strong>. The number of tiles is <strong>32</strong> for the width (256 / 8) and <strong>30</strong> for the height (240 / 8), summing up a total of 32 * 30 = <strong>960 tiles</strong>. They are grouped in <strong>16x16 px</strong> areas called <em>blocks</em> or <em>metatiles</em>, which means that the screen has a total of 16 (256 / 16) horizontal and 15 (240 / 16) vertical blocks. That sums up to 16 * 15 = <strong>240 blocks</strong>. Now, if we add a grid for the 8x8 tiles and another for the 16x16 blocks, our image looks like this:</p>
+    
+        <figure>
+            <img src="img/02-04.png" alt="Grids of 8x8 (gray) and 16x16 (red)">
+            <figcaption>Grids of 8x8 (gray) and 16x16 (red)</figcaption>
+        </figure>
+    
+        <p>The axis numbers are hexadecimal and can be added together to specify a position in the grid: for example, the tile with the 'H' is at the <code>$80 + $3 = $83</code> position.</p>
+    
+        <p>The fact is, <strong>each block must have a unique palette</strong> and so all its inner tiles must share the same colors. This is why environments have a "blocky" appearance. Observe here how these two tiles are different but belong to the same block and have the same palette:</p>
+    
+        <figure>
+            <img src="img/02-05.png" alt="A block's palette">
+            <figcaption>A block's palette - observe how the tiles use different colors, yet the palette is the same</figcaption>
+        </figure>
+    
+        <p>Backgrounds in NES are built upon 4 components that handle specific aspects: tiles, color, position and attributes. Let's dig into the first of the background components, the pattern tables.</p>
+    
+        <p>Do you want to continue?</p>
+        
+        <p>YES</p>
+        
+        <p><em>(sorry, there's no NO button).</em></p>
+    
+        <hr>
+    
+        <h4>1 - Pattern Tables: CHR</h4>
+        <section>
+            <p>The pattern tables comprehend an area of the PPU memory that contains the tiles for both background and sprites. For the background, this data is also known as <strong>CHR</strong>, which comes from <em>character</em> because it's related to how text is displayed.</p>
+            
+            <p>The tiles of our picture are these:</p>
+    
+            <figure>
+                <img src="img/02-0101.png" alt="The X Tiles - wasn't that the name of the show?">
+                <figcaption>The X Tiles - wasn't that the name of the show?</figcaption>
+            </figure>
+        
+            <p>As you can see, there are some tiles of the alphabet and from the sprites, but these are not the real colors in the game. Have you noticed that the palette is the same as before? Here we've forced the palette to match some colors of the game, but you can choose any available palette, even grayscale.</p>
+        
+            <p>Well, each tile has <strong>16 bytes divided into 2 planes</strong> (8 bytes each) and each pixel needs 2 bits to be represented, so for a single pixel you can choose only one color of a maximum of 4 (2^2). Let's analyse this tile that has all 4 colors of its palette:</p>
+        
+            <figure>
+                <img src="img/02-0102.png" alt="The tile...">
+                <figcaption>The tile...</figcaption>
+            </figure>
+        
+            <figure>
+                <img src="img/02-0103.png" alt="...and its palette">
+                <figcaption>...and its palette</figcaption>
+            </figure>
+    
+            <p>The numbers beneath the palette are the indexes, which leaves us with:</p>
+        
+            <figure>
+                <img src="img/02-0104.png" alt="Pixel indexes">
+                <figcaption>Pixel indexes</figcaption>
+            </figure>
+        
+            <p>We are going to make some calculations in binary system, so bring up the <em>Windows Calculator</em> or whatever tool convertion that you like. First, we must convert each decimal index to a 2-digit binary number: 
+                
+            <table>
+                <caption>Indexes</caption>
+                <tbody>
+                    <tr>
+                        <td class="thick-right-border"><em>Decimal</em></td>
+                        <td>0</td>
+                        <td>1</td>
+                        <td>2</td>
+                        <td>3</td>
+                    </tr>
+                    <tr>
+                        <td class="thick-right-border"><em>Binary</em></td>
+                        <td><code>00</code></td>
+                        <td><code>01</code></td>
+                        <td><code>10</code></td>
+                        <td><code>11</code></td>
+                    </tr>
+                </tbody>
+            </table>
+        
+            <figure>
+                <img src="img/02-0105.png" alt="Binary indexes - looks like Matrix!">
+                <figcaption>Binary indexes - looks like Matrix!</figcaption>
+            </figure>
+            
+            <p>We said that each tile has 2 planes - better known as <em>bitplanes</em>. The first plane controls the low digit (the rightmost) of every binary number and the second controls the big digit (leftmost). For example: with <code>10</code>, the first bitplane will control the <code>0</code> and the second will control the <code>1</code>. We can reuse the previous diagram and represent each bitplane like this:</p>
+        
+            <figure>
+                <img src="img/02-0106.png" alt="First plane (plane 0)">
+                <figcaption>First plane (bitplane 0)</figcaption>
+            </figure>
+                
+            <figure>
+                <img src="img/02-0107.png" alt="Second plane (plane 1)">
+                <figcaption>Second plane (bitplane 1)</figcaption>
+            </figure>
+            
+            <p>Considering that each row is 1 byte and reading bits left to right, we are getting two sequences of 8 bytes:</p>
+            
+            <table>
+                <caption>Bitplane 0</caption>
+                <tbody>
+                    <tr>
+                        <td class="thick-right-border"><em>Byte</em></td>
+                        <td>$00</td>
+                        <td>$01</td>
+                        <td>$02</td>
+                        <td>$03</td>
+                        <td>$04</td>
+                        <td>$05</td>
+                        <td>$06</td>
+                        <td>$07</td>
+                    </tr>
+                    <tr>
+                        <td class="thick-right-border"><em>Binary</em></td>
+                        <td><code>11110011</code></td>
+                        <td><code>11101101</code></td>
+                        <td><code>11010011</code></td>
+                        <td><code>11011100</code></td>
+                        <td><code>10101000</code></td>
+                        <td><code>11011001</code></td>
+                        <td><code>00101110</code></td>
+                        <td><code>01010101</code></td>
+                    </tr>
+                    <tr>
+                        <td class="thick-right-border"><em>Hex</em></td>
+                        <td><code>$F3</code></td>
+                        <td><code>$ED</code></td>
+                        <td><code>$D3</code></td>
+                        <td><code>$DC</code></td>
+                        <td><code>$A8</code></td>
+                        <td><code>$D9</code></td>
+                        <td><code>$2E</code></td>
+                        <td><code>$55</code></td>
+                    </tr>
+                </tbody>
+            </table>
+    
+            <table>
+                <caption>Bitplane 1</caption>
+                <tbody>
+                    <tr>
+                        <td class="thick-right-border"><em>Byte</em></td>
+                        <td>$00</td>
+                        <td>$01</td>
+                        <td>$02</td>
+                        <td>$03</td>
+                        <td>$04</td>
+                        <td>$05</td>
+                        <td>$06</td>
+                        <td>$07</td>
+                    </tr>
+                    <tr>
+                        <td class="thick-right-border"><em>Binary</em></td>
+                        <td><code>11110011</code></td>
+                        <td><code>11100000</code></td>
+                        <td><code>11001100</code></td>
+                        <td><code>11000011</code></td>
+                        <td><code>10010111</code></td>
+                        <td><code>11000110</code></td>
+                        <td><code>00000001</code></td>
+                        <td><code>00001010</code></td>
+                    </tr>
+                    <tr>
+                        <td class="thick-right-border"><em>Hex</em></td>
+                        <td><code>$F3</code></td>
+                        <td><code>$E0</code></td>
+                        <td><code>$CC</code></td>
+                        <td><code>$C3</code></td>
+                        <td><code>$97</code></td>
+                        <td><code>$C6</code></td>
+                        <td><code>$01</code></td>
+                        <td><code>$0A</code></td>
+                    </tr>
+                </tbody>
+            </table>
+    
+            <p>Finally, the 16 bytes sequence is:</p>
+        
+            <p><code>F3 ED D3 DC A8 D9 2E 55 F3 E0 CC C3 97 C6 01 0A</code></p>
+        
+            <p>There we have the code for our tile!</p>
+        
+            <p>But wait, there is something important to consider before moving on: <em>the real colors are NOT YET defined.</em> We will see later that choosing the palette is a task for another component. For now let's continue with the component that manages how tiles are distributed along the background.</p>
+        </section>
+            
+        <hr>
+    
+        <h4>2 - Nametables</h4>
+        <section>
+            <p>Remember that it takes 960 tiles to fill the background?</p>
+        
+            <p>"That's a lot of tiles! Developers must have had a lot of work filling every environment with these LEGO-like stuff!"</p>
+        
+            <p>Don't panic - they didn't.</p>
+        
+            <p>You must already know that videogames always repeat and reuse tiles and patterns to build maps and environments, and that's a great way to make the best out of the resources. Unfortunately, <strong>background tiles cannot be rotated or flipped</strong> horizontally nor vertically.</p>
+        
+            <p>"But how do we tell the game to repeat and where to locate them?"</p>
+        
+            <p>That's when <em>nametables</em> come into play.</p>
+        
+            <p>A nametable is an area of the PPU, stored in VRAM, that distributes and assigns CHR tiles to each location on the screen. You could think that this should take 960 bytes, but thanks to repetition and reusability, it's fewer than that. Tile assignment is left to right, top to bottom, and positions are calculated by summing both values like we saw before. Our tile can be found twice on the screen, at <code>$280</code> and <code>$290</code> positions:</p>
+        
+            <figure>
+                <img src="img/02-0201.png" alt="Locations of the tile">
+                <figcaption>Locations of the tile</figcaption>
+            </figure>
+
+            <p>The values in the nametable depend on the index order of the CHR tiles. In our case it would be:</p>
+        
+            <figure>
+                <img src="img/02-0202.png" alt="What happened to the colors??">
+                <figcaption>What happened to the colors??</figcaption>
+            </figure>
+        
+            <p>Now that we know the tile indexes and that ours is <code>$74</code>, then the background will have this scheme:</p>
+
+            <figure>
+                <img src="img/02-0203.png" alt="Nametable with tile indexes">
+                <figcaption>Nametable with tile indexes</figcaption>
+            </figure>
+
+            <p>In fact, NES has not just one but 4 nametables, arranged in a 2x2 pattern. Each one has <strong>1024 bytes</strong> (<code>$400</code>) and are located at the <code>$2000</code>, <code>$2400</code>, <code>$2800</code> and <code>$2C00</code> VRAM addresses. Tiles have 960 bytes, so the remaining 64 are for the <em>attributes table</em> - we'll go in further detail later. Due to hardware limitations, only 2 nametables are used on screen at the same time (the others are just duplicates). These two active nametables can be stacked one on top of the other or side by side, which allows to a more efficient change of screen and smooth transitions in the horizontal or vertical axis. If it scrolls horizontally, it's called <em>vertical mirroring</em>; if scrolling is vertical, it's <em>horizontal mirroring</em>. In the first case, stacked nametables (one on top of the other) share the same tileset; in the second, side-by-side nametables share the same tileset. See examples of each one in <em>Lode Runner</em> and <em>Ice Climber</em> respectively:</p>
+        
+            <h5>Lode Runner</h5>
+            <figure>
+                <img src="img/02-0204.gif" alt="Lode Runner's first stage">
+                <figcaption>Lode Runner's first stage</figcaption>
+            </figure>
+        
+            <figure>
+                <img src="img/02-0205.png" alt="Lode Runner's nametables">
+                <figcaption>Lode Runner's nametables</figcaption>
+            </figure>
+        
+            <h5>Ice Climber</h5>
+            <figure>
+                <img src="img/02-0206.gif" alt="Ice Climber's first stage">
+                <figcaption>Ice Climber's first stage</figcaption>
+            </figure>
+        
+            <figure>
+                <img src="img/02-0207.png" alt="Ice Climber's nametables (part)">
+                <figcaption>Ice Climber's nametables (fragment)</figcaption>
+            </figure>
+        
+            <p>Most platform games employ horizontal scrolling, so <em>vertical mirroring</em> is more frequent. It's no exaggeration to say that NES got a huge popularity in platformer and shooter games, due to this feature. In a game like <em>Lode Runner</em> we have only two screens (nametables) but frequently levels seem to be have an infinite size: this is achieved by continuously updating the off-screen part of the nametables. Scrolling is controlled by a memory register at the <code>$2005</code> address that determines which nametable to start with and how many pixels the screen must be moved. See how the beginning of <em>BreakThru</em> scrolls through nametables:</p>
+
+            <figure>
+                <img src="img/02-0208.gif" alt="Nametable scrolling">
+                <figcaption>Nametable scrolling</figcaption>
+            </figure>
+
+            <p>Have you noticed how nametables update <em>just before</em> appearing on screen?</p>
+            
+            <p>"Great, now we have located all the tiles! The canvas is ready. What's next, coloring?"</p>
+        
+            <p>Yes. Let's move on with palettes, the third background component.</p>    
+        </section>
+        
+        <hr>
+    
+        <h4>3 - Palettes</h4>
+        <section>
+            <p>As it was said before, there are 4 palettes, each with 3 colors and one in common. Our <em>DuckTales</em> image has these:</p>
+        
+            <figure>
+                <img src="img/02-0301.png" alt="Background palettes">
+                <figcaption>Background palettes</figcaption>
+            </figure>
+        
+            <p>We saw that background tiles can't be flipped or rotated. Nevertheless, tiles can make interesting effects by changing palettes, for example when a wall has a darker section and the bricks have different colors. Watch this snapshot from <em>Last Action Hero</em>:</p>
+        
+            <figure>
+                <img src="img/02-0302.png" alt="Look at those lights!">
+                <figcaption>Look at those lights!</figcaption>
+            </figure>
+        
+            <p>Observe how this scene repeats the exact same tile for the background city lights, changing just the palette.</p>
+        
+            <p>Effects like this are applied everywhere. You surely have seen games where enemies have the same sprites but in different colors. Another fantastic advantage of the NES is that it can swap palettes on the fly while keeping the same tiles. Instead of wasting a lot of sprites to create a waterfall, palettes can be swapped to mimic a 'flow' effect. 'Night and day', 'lightning' or 'flashing' efects can be achieved in the same manner.</p>
+        
+            <p>Look at the stars and water in the next screen - this game needs no presentation:</p>
+            
+            <figure>
+                <img src="img/02-0303.gif" alt="Twinkle twinkle little star...">
+                <figcaption>Twinkle twinkle little star...</figcaption>
+            </figure>
+            
+            <p>The technique used is very simple, yet quite effective: while the palette remains the same, the last two colors are continously switched.</p>
+            
+            <figure>
+                <img src="img/02-0304.gif" alt="The twinkling effect on both the stars and the water is achieved by switching the last two colors">
+                <figcaption>The twinkling effect on both the stars and the water is achieved by swapping the last two colors</figcaption>
+            </figure>
+
+            <p>A more evident palette change can be seen on the flashing letters at the title screen of <em>Lunar Pool</em>:</p>
+
+            <figure>
+                <img src="img/02-0305.gif" alt="Changing palettes on the fly">
+                <figcaption>Changing palettes on the fly</figcaption>
+            </figure>
+
+            <p>OK, let's proceed to the last component, the one that defines what palettes must be used.</p>    
+        </section>
+
+        <hr>
+    
+        <h4>4 - Attributes</h4>
+        <section>
+            <p>An attribute table is an array located at the end of each nametable and its main function is to assign one of the 4 palettes for each block - remember that blocks must have one and only one palette. Each table is arranged as 8x8 and has a size of <strong>64 bytes</strong> (<code>$40</code>), starting at the <code>$23C0</code>, <code>$27C0</code>, <code>$2BC0</code> and <code>$2FC0</code> offsets.</p>
+        
+            <p>The attributes table for the <em>Ducktales</em> picture is this:</p>
+        
+            <figure>
+                <img src="img/02-0401.png" alt="So many tiny squares!">
+                <figcaption>So many tiny squares!</figcaption>
+            </figure>
+        
+            <p>Whoooa! This is so dizzy! Here the palette of <em>every tile</em> is shown, but it's kind of messy, isn't it? Let's clear it up a bit by showing just <em>every block</em>'s palette instead:</p>
+        
+            <figure>
+                <img src="img/02-0402.png" alt="Much better!">
+                <figcaption>Much better!</figcaption>
+            </figure>
+        
+            <p>This is how this attributes are really treated, occupying regions of 4 blocks (2x2 blocks = 4x4 tiles = 32x32 px). In turn, these regions are divided into four quadrants and each quadrant is given its corresponding palette index. Take a glimpse at the area starting at <code>$1C2</code>:</p>
+        
+            <figure>
+                <img src="img/02-0403.png" alt="A 2x2 block area">
+                <figcaption>A 2x2 block area</figcaption>
+            </figure>
+        
+            <p>The attribute byte that controls the palette of a region is built in a very particular way. The palette indexes must first be converted to binary and then read in this order: bottom-right, bottom-left, top-right, top-left (like a Z-shape).</p>
+        
+            <figure>
+                <img src="img/02-0404.png" alt="Zorro!">
+                <figcaption>Z for Zorro!</figcaption>
+            </figure>
+        
+            <p>Finally, the value of the byte is that sequence, converted to hex:</p>
+        
+            <blockquote><code>Value = bottom-right + bottom-left + top-right + top-left</code></blockquote>
+        
+            <p>Ladies and gentlemen, please fasten your seatbelts, for now we are taking a ride through the Three Numerical Systems. Be ready soon, because our bus leaves from Palette Indexes at 8 o'clock. We've considered them as decimal so far, so our first stop will be at Binary Sights. Do you remember the indexes expressed in binary? Here is a nice postcard to remind you:</p>
+        
+            <table>
+                <caption>Palette indexes</caption>
+                <tbody>
+                    <tr>
+                        <td class="thick-right-border"><em>Decimal</em></td>
+                        <td>0</td>
+                        <td>1</td>
+                        <td>2</td>
+                        <td>3</td>
+                    </tr>
+                    <tr>
+                        <td class="thick-right-border"><em>Binary</em></td>
+                        <td><code>00</code></td>
+                        <td><code>01</code></td>
+                        <td><code>10</code></td>
+                        <td><code>11</code></td>
+                    </tr>
+                </tbody>
+            </table>
+        
+            <p>Well, our next stop will be reading them like a Z-shape:</p>
+        
+            <figure>
+                <img src="img/02-0405.png" alt="Binary palette indexes">
+                <figcaption>Binary palette indexes</figcaption>
+            </figure>
+            
+            <p>Hence the byte for our region is <code>11010101</code>.</p> 
+            
+            <p>Last stop! Prepare yourselves to convert it to hex. Ready? OK. The byte is (snare roll)... <code>$D5</code>!</p>
+        
+            <p>Congratulations! You've sucessfully finished the tour!</p>
+            
+            <p>Well, not quite yet. This is just the beginning. We're done with just 1 of the 64 attribute bytes, but it's enough to get the idea for the others.</p>    
+        </section>
+
+        <p>"Phew! That was a long ride!"</p>
+
+        <p>OK, now that we've finished with backgrounds, let's get on with <strong>sprites</strong>. It's much simpler.</p>
+    </section>
+
+    <hr>
+
+    <h3>SPRITES</h3>
+    <section>
+        <p>As you already know by now, sprites are the animated part of graphics: characters, objects, health bars, etc. If you see something that moves in the game, <em>in most cases</em> it's a sprite. I say <em>in most cases</em> and not <em>always</em> because there are some examples in which moving things are part of the background.</p>
+    
+        <p>There's only one sprite layer in NES and a 16-color palette, divided into 4 subpalettes of 4 colors each. The first one is transparent and is repeated across all palettes - therefore the colors are <strong>12 plus transparency</strong>. As with backgrounds, sprites can use any of the 4 color subpalettes but just only one. Sprite tiles typically have a square size of <strong>8x8</strong> pixels and the system can handle up to <strong>64</strong> sprites on-screen before visual flickering. In some games, you can find sprites of <strong>8x16</strong> px; you can still display 64 of these taller sprites, but in that case <strong>ALL sprites must have the same size</strong>.</p>
+
+        <p>For example, see this one from <em>Astyanax</em>:</p>
+    
+        <figure>
+            <img src="img/03-01.png" alt="8x16 sprites - note that all have the same size">
+            <figcaption>8x16 sprites - note that all have the same size</figcaption>
+        </figure>
+        
+        <p>Flickering can also occur <strong>if more than 8 sprites are displayed across the same horizontal scanline</strong>. If so happens, those sprites that appear later in memory will not be rendered.</p>
+    
+        <figure>
+            <img src="img/03-02.gif" alt="Watch the flickering at the floor scanline">
+            <figcaption>Watch the flickering at the grass scanline</figcaption>
+        </figure>
+
+        <p>Despite of this issue, an advantage of the NES is that sprite tiles can be reused by <strong>flipping them horizontally or vertically</strong> - but not rotated -, thus saving a lot of memory. Unlike nametables, sprites aren't bound to a grid, they are arbitrarily positioned on the screen and can also be placed over each other - it may provoke a flicker issue though.</p>
+
+        <p>Sprites are taken from a single <strong>128x128</strong> px image that has 256 tiles of 8x8 size, or 128 tiles of 8x16 size. Sprites are stored inside an internal memory section of the PPU called <strong>OAM</strong> (<em>Object Attribute Memory</em>). Each tile's data occupies <strong>4 bytes</strong>, so the OAM bears a total of 64 x 4 = 256 bytes. These 4 bytes are ordered in a very strange way:</p>
+        <ol>
+            <li><strong>Byte 0</strong> - The Y position of the upper side of the sprite.</li>
+            <li><strong>Byte 1</strong> - The sprite index number.</li>
+            <li><strong>Byte 2</strong> - The attributes: vertical and horizontal flipping, priority (in front or behind the background) and palette. The bits are referred as follows:
+                
+                <table>
+                    <caption>Byte 2</caption>
+                    <thead>
+                        <th>7</th>
+                        <th>6</th>
+                        <th>5</th>
+                        <th>4</th>
+                        <th>3</th>
+                        <th>2</th>
+                        <th>1</th>
+                        <th>0</th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>V</td>
+                            <td>H</td>
+                            <td>P</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>C</td>
+                            <td>C</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <table>
+                    <caption>Reference</caption>
+                    <tbody>
+                        <tr>
+                            <td>V</td>
+                            <td class="align-left">Vertical flipping (<code>0</code> = off, <code>1</code> = on)</td>
+                        </tr>
+                        <tr>
+                            <td>H</td>
+                            <td class="align-left">Horizontal flipping (<code>0</code> = off, <code>1</code> = on)</td>
+                        </tr>
+                        <tr>
+                            <td>Priority</td>
+                            <td class="align-left"><code>0</code> = in front of the background, <code>1</code> = behind the background</td>
+                        </tr>
+                        <tr>
+                            <td>-</td>
+                            <td class="align-left">Unused bits</td>
+                        </tr>
+                        <tr>
+                            <td>C</td>
+                            <td class="align-left">Palette of colors - one of the four indexes</td>
+                        </tr>
+                    </tbody>
+                </table>
+            
+            </li>
+            <li><strong>Byte 3</strong> - The X position of the left side of the sprite.</li>
+        </ol>
+        
+        <p>Let's make a little zoom and observe each byte in detail:</p>
+        <ul>
+            <li>
+                <p>Position of the sprite in X and Y axis is defined by bytes 3 and 0 respectively. Suppose that we want to locate a 8x8 sprite at the center of the screen. The coordinates are:
+
+                    <blockquote>Y = (ScreenHeight - SpriteHeight) / 2 = (240 - 8) / 2 = 116 = $74</blockquote>
+                    <blockquote>X = (ScreenWidth - SpriteWidth) / 2 = (256 - 8) / 2 = 124 = $7C</blockquote>
+
+                So byte 0 should be <code>$74</code> and byte 3 should be <code>$7C</code>.</p>
+            </li>
+            <li>
+                <p>You can hide a sprite by moving it down and outside the screen, but bear in mind that you can't display a sprite on the first scanline or partially place it at the top of the screen. Neither can you have a sprite partially visible on the left edge.</p>
+            </li>
+            <li>
+                <p>Sprites may be flipped both vertically and horizontally. Flipping <em>only changes the position of pixels inside the sprite</em> - it doesn't affect its position on screen.</p>
+            </li>
+            <li>
+                <p>Priority allows effects for the sprite like being hidden by fog, blocks or vegetation, as in this <em>Battle City</em> example:</p>
+            
+                <figure>
+                    <img src="img/03-03.gif" alt="Hide, hide under the trees!">
+                    <figcaption>Hide, hide under the trees!</figcaption>
+                </figure>
+
+                <p>Besides, priority between sprites is defined by their addresses inside OAM: for example, when two sprites whose indexes are <code>$38</code> and <code>$3A</code>, the first one will be shown at the front. For example, observe how Scrooge's face has transparency, is not aligned to the grid and is placed over other 4 tiles:</p>
+
+                <figure>
+                    <img src="img/03-04.png" alt="Scrooge's sprite">
+                    <figcaption>Scrooge's sprite - notice that horizontal flipping is checked</figcaption>
+                </figure>
+            </li>
+        </ul>
+    </section>
+
+    <hr>
+    
+    <h3>Other visual effects</h3>
+    <section>
+        <p>Being independent from the background, another advantage of sprites is that they are not affected by scrolling. This is how HUDs remain at place while the screen scrolls left or right. Besides, backgrounds can be divided into several horizontal stripes that scroll at different speeds, thus allowing some great parallax effects and creating a sensation of perspective and velocity. See this example from <em>City Connection</em>:</p>
+        
+        <figure>
+            <img src="img/03-05.gif" alt="Take me down to the Parallax City">
+            <figcaption>Take me down to the Parallax City</figcaption>
+        </figure>
+
+        <p>The floors couldn't be sprites because of the 64-limit, so they are made of tiles that are independent of the background picture. Now watch the different scrolling speeds of the water lines, the horizon and the clouds in this fragment of <em>Teenage Mutant Ninja Turtles III - The Manhattan Project</em>:</p>
+        
+        <figure>
+            <img src="img/03-06.gif" alt="Cowabunga!">
+            <figcaption>Cowabunga!</figcaption>
+        </figure>
+
+        <p>There are lots of other animation effects that can be applied. An interesting one is when background tiles actually change their pixels. The spinning coins in <em>Super Mario 3</em> is a beautiful example of this technique: coins are actually part of the backgrounds and when Mario overlaps the screen location of the coin, the game replaces that tile with one from the background. Isn't it brilliant? Those developers were really geniuses!</p>
+    
+        <figure>
+            <img src="img/04-01.gif" alt="Coins in Super Mario 3">
+            <figcaption>Coins in Super Mario 3</figcaption>
+        </figure>
+
+        <p>In the intro from <em>Crystalis</em>, swapping nametables creates a fire effect:</p>
+
+        <figure>
+            <img src="img/04-02.gif" alt="Swapping nametables">
+            <figcaption>Swapping nametables</figcaption>
+        </figure>
+
+        <p>Another common and cool technique is called <strong>bank switching</strong>, which consists in pointing towards addresses of nametables or sprites tiles that are located in another part of the memory. In this manner, an entire section of the background can be animated by replacing tiles instantaneously.</p>
+
+        <p>Watch this rain effect in <em>Shadow of the Ninja</em>:</p>
+        <figure>
+            <img src="img/04-03.gif" alt="The rain is achieved by switching bank - look at the cord too">
+            <figcaption>The rain is achieved by switching tile banks - look at the cord too</figcaption>
+        </figure>
+
+        <p>Bank switching can also produce a parallax effect, like the sky and flames in <em>Batman - Return of the Joker</em>:</p>
+        
+        <figure>
+            <img src="img/04-04.gif" alt="Those clouds are really fast!">
+            <figcaption>Those clouds are really fast!</figcaption>
+        </figure>
+
+        <p>The intro of <em>Chaos World</em> is a marvelous example of the use of many techniques: notice the "swaying" effect on the magician, the parallax effect (the castle are sprites) and the sky changing due to bank switching:</p>
+
+        <figure>
+            <img src="img/04-05.gif" alt="Chaos World intro">
+            <figcaption>Chaos World intro</figcaption>
+        </figure>
+
+        <hr>
+    
+        <p>Phew! We've been through so much just to see how graphics are made in NES games. But be happy, it really was worth the effort because fortunately these principles apply in similar ways to other consoles. Moreover, now you can better understand terminology and debuggers of the emulators.</p>
+        
+        <p>Let's take a break to review the main characteristics of this console:</p>
+    </section>
+
+    <hr>
+
+    <h3>NES GRAPHICAL FEATURES SUMMARY</h3>
+    <section>
+        <ul>
+            <li><strong>Graphics processor</strong>: PPU (<em>Picture Processing Unit</em>).</li>
+            <li><strong>Screen resolution</strong>: 256x240.</li>
+            <li><strong>Colors</strong>: A total of 54 colors but only 26 on-screen at a time (13 for the sprites and 13 for the background). The palettes are splitted into 4 subpalettes of 4 colors, the first one being a backdrop that is repeated in every subpalette.</li>
+            <li><strong>Color depth</strong>: 2 bpp (2 bitplanes) - 4 colors per tile.</li>
+            <li><strong>Background</strong>:
+                <ul>
+                    <li>Just one layer.</li>
+                    <li>4 nametables - only 2 active on screen.</li>
+                    <li>12 different colors plus backdrop.</li>
+                    <li>8x8 px tiles.</li>
+                    <li>The complete size is 32x30 tiles (960).</li>
+                    <li>Tiles can't be flipped or rotated and must be aligned to the grid.</li>
+                    <li>Tiles are grouped in blocks of 16x16 px (2x2 tiles). Tiles in the same block must all have the same 4 color palette.</li>
+                    <li>Can be horizontally splitted into different bands with independent scrollings (but not vertically).</li>
+                    <li>Colors can be changed on the fly, swapping between different palettes (as an animation effect).</li>
+                    <li>Background tiles can be animated as alternatives for sprites.</li>
+                </ul>
+            </li>
+            <li><strong>Sprites</strong>:
+                <ul>
+                    <li>Just one layer.</li>
+                    <li>12 different colors plus transparency.</li>
+                    <li>8x8 px or 8x16 px tiles - only one size at a time.</li>.
+                    <li>A single tile has 4 bytes: position, tile index, palette, priority.</li>
+                    <li>Maximum of 8 tiles per horizontal scanline and a maximum of 64 on screen at the same time.</li>
+                    <li>Arbitrarily positioned - not bound to a grid.</li>
+                    <li>Sprites can be flipped horizontally and/or vertically (but not rotated) and can be overlapped by tiles from the background.</li>
+                    <li>Not affected by scrolling.</li>
+                    <li>Sprites are taken from a single 128x128 px image of 256 tiles of 8x8 px size, or 128 tiles of 8x16 px size.</li>
+                </ul>
+            </li>
+        </ul>
+    </section>
+
+    <hr>
+    <hr>
+
+    <h2>SEGA MASTER SYSTEM</h2>
+    <section>
+        <p>All in all, the Sega Master System has a lot of things in common with the NES, so we will be using many terms that have been already explained.</p>
+
+        <p>SMS had a resolution of 256x192 px for NTSC and <strong>256x224</strong> px for PAL TVs, being this last one the standardized resolution. This represents a true 4:3 aspect ratio, so the pixels aren't so stretched as in NES.</p>
+
+        <p>The graphics processor was the <strong>VDP</strong> (<em>Video Display Processor</em>) and SMS graphics are also divided into 2 components: background (nametable) and sprites. The total palette of colors is <strong>64</strong> but only <strong>32</strong> can be shown simultaneously, and each layer has <strong>16 colors</strong> - sprites have 15 plus transparency. An interesting fact is that, unlike the NES, palettes aren't split into subpalettes and the <strong>background can utilize any color of both palettes</strong>:</p>
+        
+        <figure>
+            <img src="img/05-01.png" alt="SMS colors palette">
+            <figcaption>SMS colors palette</figcaption>
+        </figure>
+
+        <p>Colors are directly codified in 1 byte in RGB format: the first 2 bits are unused and each of the remaining 6 specify the levels for every RGB channel:</p>
+
+        <table>
+            <caption>Color byte</caption>
+            <tbody>
+                <tr>
+                    <td class="thick-right-border"><em>Bit</em></td>
+                    <td>7</td>
+                    <td>6</td>
+                    <td>5</td>
+                    <td>4</td>
+                    <td>3</td>
+                    <td>2</td>
+                    <td>1</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td class="thick-right-border"><em>Color</em></td>
+                    <td colspan="2">Unused</td>
+                    <td colspan="2">R</td>
+                    <td colspan="2">G</td>
+                    <td colspan="2">B</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p>The 2 bits of each channel define one of 4 levels of intensity:</p>
+
+        <table>
+            <caption>Intensity</caption>
+            <thead>
+                <th>Bit</th>
+                <th>Hex code</th>
+                <th>RGB code</th>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>00</code></td>
+                    <td>00</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td><code>01</code></td>
+                    <td>52</td>
+                    <td>82</td>
+                </tr>
+                <tr>
+                    <td><code>10</code></td>
+                    <td>AD</td>
+                    <td>173</td>
+                </tr>
+                <tr>
+                    <td><code>11</code></td>
+                    <td>FF</td>
+                    <td>255</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p>For example, the following hue of pink is coded as <code>00110110</code>, corresponding to R = 255, G = 82, B = 173. Or expressed in hexadecimal code: #FF52AD.</p>
+
+        <figure>
+            <img src="img/05-02.png" alt="(255, 82, 173) = #FF52AD">
+            <figcaption>(255, 82, 173) = #FF52AD</figcaption>
+        </figure>
+        
+        <h3>BACKGROUND</h3>
+        <section>
+            <p>SMS has a unique background layer and the full palette has 32 indexes, where the first 16 (<code>$00</code> to <code>$15</code>) are exclusively for the background and the other 16 (<code>$16</code> to <code>$31</code>) are for the sprites. Nevertheless, backgrounds can swap palettes on the fly and use <strong>any color of both palettes</strong>. A major difference with NES is that Master System doesn't divide the main palette into subpalettes, so any background tile can have any of the <strong>32 colors</strong> available on screen.</p>
+
+            <p>See this snapshot of <em>Castle of Illusion Starring Mickey Mouse</em>:</p>
+
+            <figure>
+                <img src="img/05-0101.png" alt="How colorful!">
+                <figcaption>How colorful!</figcaption>
+            </figure>
+
+            <figure>
+                <img src="img/05-0102.png" alt="Scene palettes - observe how both have a color in common">
+                <figcaption>Screen palettes - observe how both have a color in common</figcaption>
+            </figure>
+
+            <p>Unfortunately, Master System has just one nametable. Background tiles have a size of <strong>8x8</strong> px and <strong>can be flipped both horizontally and vertically but not rotated</strong>. They are stored in VRAM up to a number of 512, but a maximum of <strong>488</strong> can be used. The nametable has a size of <strong>32x28</strong> words in a 256x224 resolution. But what is a <em>word</em>? It's a 16-bit value that defines each tile's attributes:</p>
+
+            <table>
+                <caption>Nametable word</caption>
+                <thead>
+                    <th>15</th>
+                    <th>14</th>
+                    <th>13</th>
+                    <th>12</th>
+                    <th>11</th>
+                    <th>10</th>
+                    <th>9</th>
+                    <th>8</th>
+                    <th>7</th>
+                    <th>6</th>
+                    <th>5</th>
+                    <th>4</th>
+                    <th>3</th>
+                    <th>2</th>
+                    <th>1</th>
+                    <th>0</th>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="3">-</td>
+                        <td>P</td>
+                        <td>C</td>
+                        <td>V</td>
+                        <td>H</td>
+                        <td colspan="9">N</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <table>
+                <caption>Reference</caption>
+                <tr>
+                    <td>-</td>
+                    <td class="align-left">Unused (some games use these bits as flags for collision or damage)</td>
+                </tr>
+                <tr>
+                    <td>P</td>
+                    <td class="align-left">Priority - When set to <code>1</code>, the tile will be placed in front of the sprites</td>
+                </tr>
+                <tr>
+                    <td>C</td>
+                    <td class="align-left">Palette select - When set to <code>1</code>, the tile will use the sprite palette</td>
+                </tr>
+                <tr>
+                    <td>V</td>
+                    <td class="align-left">Vertical flipping</td>
+                </tr>
+                <tr>
+                    <td>H</td>
+                    <td class="align-left">Horizontal flipping</td>
+                </tr>
+                <tr>
+                    <td>N</td>
+                    <td class="align-left">Tile index - any of the 512 available: 0-511</td>
+                </tr>
+            </table>
+
+            <p>You can think of this sequence as 2 bytes, or a word being equivalent to a tile, so a fullscreen background has a total of 896 tiles! But of course, many of them are repeated.</p>
+
+            <p>Given that the palette is the same all across the screen, there aren't any 16x16 blocks or 32x32 regions as in NES. Furthermore, attribute tables don't make any sense either, because tiles are more "independent" and aren't restricted to a subpalette. Each tile is composed of 4 bitplanes (<strong>4 bpp</strong>) and each bitplane has 1 byte, so each tile has <strong>32 bytes</strong> (8 rows of 8 bits = 8 bytes, and 8 * 4 = 32 bytes). Besides, each pixel has one of the 16 colors, so a single tile can have up to 16 different colors. Differently from NES, bytes in Master System are stored not one bitplane at a time, but <em>row-by-row</em> instead:</p>
+
+            <table>
+                <caption>Bytes per row</caption>
+                <thead>
+                    <tr>
+                        <th rowspan="2">Row</th>
+                        <th colspan="4">Bitplane</th>
+                    </tr>
+                    <tr>
+                        <th>0</th>
+                        <th>1</th>
+                        <th>2</th>
+                        <th>3</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="thick-right-border"><em>0</em></td>
+                        <td>r0b0</td>
+                        <td>r0b1</td>
+                        <td>r0b2</td>
+                        <td>r0b3</td>
+                    </tr>
+                    <tr>
+                        <td class="thick-right-border"><em>1</em></td>
+                        <td>r1b0</td>
+                        <td>r1b1</td>
+                        <td>r1b2</td>
+                        <td>r1b3</td>
+                    </tr>
+                    <tr>
+                        <td class="thick-right-border"><em>2</em></td>
+                        <td>r2b0</td>
+                        <td>r2b1</td>
+                        <td>r2b2</td>
+                        <td>r2b3</td>
+                    </tr>
+                    <tr>
+                        <td class="thick-right-border">...</td>
+                        <td>...</td>
+                        <td>...</td>
+                        <td>...</td>
+                        <td>...</td>
+                    </tr>
+                    <tr>
+                        <td class="thick-right-border"><em>7</em></td>
+                        <td>r7b0</td>
+                        <td>r7b1</td>
+                        <td>r7b2</td>
+                        <td>r7b3</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p>OK, let's see again how the background from the last picture is formed:</p>
+
+            <figure>
+                <img src="img/05-0103.png" alt="Background tiles">
+                <figcaption>Background tiles</figcaption>
+            </figure>
+
+            <p>We'll take the first tile and study it like we did before:</p>
+
+            <figure>
+                <img src="img/05-0104.png" alt="The upper left background tile...">
+                <figcaption>The upper left background tile...</figcaption>
+            </figure>
+
+            <figure>
+                <img src="img/05-0105.png" alt="...and its palette">
+                <figcaption>...and its palette</figcaption>
+            </figure>
+
+            <p>Notice that the first index is the backdrop color. To convert the palette indexes to binary, we'll need 4 bits this time, because 16 = 2^4 (remember that SMS has 4 bpp):</p>
+
+            <table>
+                <caption>Palette indexes</caption>
+                <tbody>
+                    <tr>
+                        <td class="thick-right-border"><em>Decimal</em></td>
+                        <td>0</td>
+                        <td>1</td>
+                        <td>2</td>
+                        <td>3</td>
+                        <td>4</td>
+                        <td>5</td>
+                        <td>6</td>
+                        <td>7</td>
+                        <td>8</td>
+                        <td>9</td>
+                        <td>10</td>
+                        <td>11</td>
+                        <td>12</td>
+                        <td>13</td>
+                        <td>14</td>
+                        <td>15</td>
+                    </tr>
+                    <tr>
+                        <td class="thick-right-border"><em>Binary</em></td>
+                        <td><code>0000</code></td>
+                        <td><code>0001</code></td>
+                        <td><code>0010</code></td>
+                        <td><code>0011</code></td>
+                        <td><code>0100</code></td>
+                        <td><code>0101</code></td>
+                        <td><code>0110</code></td>
+                        <td><code>0111</code></td>
+                        <td><code>1000</code></td>
+                        <td><code>1001</code></td>
+                        <td><code>1010</code></td>
+                        <td><code>1011</code></td>
+                        <td><code>1100</code></td>
+                        <td><code>1101</code></td>
+                        <td><code>1110</code></td>
+                        <td><code>1111</code></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            So the palette turns to:
+
+            <figure>
+                <img src="img/05-0106.png" alt="Palette with binary indexes">
+                <figcaption>Palette with binary indexes</figcaption>
+            </figure>
+
+            <p>And the tile:</p>
+
+            <figure>
+                <img src="img/05-0107.png" alt="Tile's palette with binary indexes">
+                <figcaption>Tile's palette with binary indexes</figcaption>
+            </figure>
+
+            <p>As we already know the process, let's skip right to the bitplanes:</p>
+
+            <figure>
+                <img src="img/05-0108.png" alt="Bitplane 0">
+                <figcaption>Bitplane 0</figcaption>
+            </figure>
+
+            <figure>
+                <img src="img/05-0109.png" alt="Bitplane 1">
+                <figcaption>Bitplane 1</figcaption>
+            </figure>
+
+            <figure>
+                <img src="img/05-0110.png" alt="Bitplane 2">
+                <figcaption>Bitplane 2</figcaption>
+            </figure>
+
+            <figure>
+                <img src="img/05-0111.png" alt="Bitplane 3">
+                <figcaption>Bitplane 3</figcaption>
+            </figure>
+
+            <p>Then we write the bytes of every bitplane row by row:</p>
+
+            <table>
+                <caption>Bytes per row</caption>
+                <thead>
+                    <tr>
+                        <th rowspan="2">Row</th>
+                        <th colspan="4">Bitplane</th>
+                    </tr>
+                    <tr>
+                        <th>0</th>
+                        <th>1</th>
+                        <th>2</th>
+                        <th>3</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="thick-right-border"><em>0</em></td>
+                        <td><code>11010001</code></td>
+                        <td><code>00111011</code></td>
+                        <td><code>00111111</code></td>
+                        <td><code>00000000</code></td>
+                    </tr>
+                    <tr>
+                        <td class="thick-right-border"><em>1</em></td>
+                        <td><code>00110001</code></td>
+                        <td><code>11111011</code></td>
+                        <td><code>01111111</code></td>
+                        <td><code>00000000</code></td>
+                    </tr>
+                    <tr>
+                        <td class="thick-right-border"><em>2</em></td>
+                        <td><code>00100110</code></td>
+                        <td><code>11111001</code></td>
+                        <td><code>01110011</code></td>
+                        <td><code>00000110</code></td>
+                    </tr>
+                    <tr>
+                        <td class="thick-right-border"><em>3</em></td>
+                        <td><code>01010010</code></td>
+                        <td><code>11101101</code></td>
+                        <td><code>00110000</code></td>
+                        <td><code>00000010</code></td>
+                    </tr>
+                    <tr>
+                        <td class="thick-right-border"><em>4</em></td>
+                        <td><code>00000100</code></td>
+                        <td><code>11111001</code></td>
+                        <td><code>00100010</code></td>
+                        <td><code>00000000</code></td>
+                    </tr>
+                    <tr>
+                        <td class="thick-right-border"><em>5</em></td>
+                        <td><code>10110000</code></td>
+                        <td><code>11001111</code></td>
+                        <td><code>00100011</code></td>
+                        <td><code>10000000</code></td>
+                    </tr>
+                    <tr>
+                        <td class="thick-right-border"><em>6</em></td>
+                        <td><code>11001110</code></td>
+                        <td><code>01111001</code></td>
+                        <td><code>00000111</code></td>
+                        <td><code>00001000</code></td>
+                    </tr>
+                    <tr>
+                        <td class="thick-right-border"><em>7</em></td>
+                        <td><code>10111110</code></td>
+                        <td><code>10110001</code></td>
+                        <td><code>00001111</code></td>
+                        <td><code>01000000</code></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p>And finally, convert them to hex to read each row in order:</p>
+
+            <table>
+                <caption>Hex bytes per row</caption>
+                <thead>
+                    <tr>
+                        <th rowspan="2">Row</th>
+                        <th colspan="4">Bitplane</th>
+                    </tr>
+                    <tr>
+                        <th>0</th>
+                        <th>1</th>
+                        <th>2</th>
+                        <th>3</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="thick-right-border"><em>0</em></td>
+                        <td><code>$D1</code></td>
+                        <td><code>$3B</code></td>
+                        <td><code>$3F</code></td>
+                        <td><code>$00</code></td>
+                    </tr>
+                    <tr>
+                        <td class="thick-right-border"><em>1</em></td>
+                        <td><code>$31</code></td>
+                        <td><code>$FB</code></td>
+                        <td><code>$7F</code></td>
+                        <td><code>$00</code></td>
+                    </tr>
+                    <tr>
+                        <td class="thick-right-border"><em>2</em></td>
+                        <td><code>$26</code></td>
+                        <td><code>$F9</code></td>
+                        <td><code>$73</code></td>
+                        <td><code>$06</code></td>
+                    </tr>
+                    <tr>
+                        <td class="thick-right-border"><em>3</em></td>
+                        <td><code>$52</code></td>
+                        <td><code>$ED</code></td>
+                        <td><code>$30</code></td>
+                        <td><code>$02</code></td>
+                    </tr>
+                    <tr>
+                        <td class="thick-right-border"><em>4</em></td>
+                        <td><code>$04</code></td>
+                        <td><code>$F9</code></td>
+                        <td><code>$22</code></td>
+                        <td><code>$00</code></td>
+                    </tr>
+                    <tr>
+                        <td class="thick-right-border"><em>5</em></td>
+                        <td><code>$B0</code></td>
+                        <td><code>$CF</code></td>
+                        <td><code>$23</code></td>
+                        <td><code>$80</code></td>
+                    </tr>
+                    <tr>
+                        <td class="thick-right-border"><em>6</em></td>
+                        <td><code>$CE</code></td>
+                        <td><code>$79</code></td>
+                        <td><code>$07</code></td>
+                        <td><code>$08</code></td>
+                    </tr>
+                    <tr>
+                        <td class="thick-right-border"><em>7</em></td>
+                        <td><code>$BE</code></td>
+                        <td><code>$B1</code></td>
+                        <td><code>$0F</code></td>
+                        <td><code>$40</code></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <blockquote class="note">NOTE: This time the colors are the <strong>real</strong> ones in the game.</blockquote>
+
+            <p>Congratulations! You've just coded the 32 bytes of the <em>first</em> tile! Now you must repeat the process with every tile!</p>
+
+            <p>"What!? You gotta be kidding!!"</p>
+
+            <p>Well... yes. No way we're gonna spend so much precious time!</p>
+        </section>
+
+        <hr>
+
+        <h3>SPRITES</h3>
+        <section>
+            <p>In general, sprites are more restricted than backgrounds. Even more, sprites are limited by the number of background tiles. As with NES, the SMS system can reproduce up to <strong>64 sprites at the same time and 8 on the same scanline before flickering</strong>. Look at this occurence in <em>Aladdin</em>:</p>
+
+            <figure>
+                <img src="img/05-0201.gif" alt="Observe the top of the barrel">
+                <figcaption>Observe the top of the barrel</figcaption>
+            </figure>
+
+            <p>Now, VRAM can store up to 256 sprites but can only show 64, so the remaining 192 can be used as background, making a maximum of 448 background tiles. Nevertheless, as they can be located on top of each other, using background tiles instead of sprites can be a smart method to avoid flickering.</p>
+
+            <p>The palette for sprites has <strong>15 colors plus transparency</strong>, with indexes spanning from <code>$16</code> (reserved for transparency) to <code>$31</code> and, unlike backgrounds, they are restricted to use only this palette. Unfortunately, sprites can't be flipped or rotated. The common sprite size is <strong>8x8</strong> px, although you can find <strong>8x16</strong> too. Look at the hero in <em>Wonder Boy in Monster World</em>:</p>
+            
+            <figure>
+                <img src="img/05-0202.png" alt="Go get them, big boy!">
+                <figcaption>Go get them, big boy!</figcaption>
+            </figure>
+
+            <p>Each sprite tile has <strong>4 bytes</strong>:</p>
+
+            <table>
+                <caption>Sprite byte</caption>
+                <thead>
+                    <th>Byte</th>
+                    <th>Description</th>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0</td>
+                        <td>Y position</td>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>X position</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Tile index (0-255)</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>Flags - Priority, palette, etc.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p>However, SMS has an awesome feature under its sleeve: the VDP has a control bit that doubles the size of the sprites, turning 8x8 tiles into 16x16 or 8x16 into 16x32 and generating a "zoom" effect. Keep in mind that this mode doubles the size of <em>all</em> sprites (I haven't found an example of this feature - if you know of any, please let me know and I'll include it).</p>
+        </section>
+
+        <hr>
+
+        <h3>Other effects</h3>
+        <section>
+            <p>Let's see some examples:</p>
+
+            <h4>Palette swapping:</h4>
+            <h5>X-Men - Mojo World</h5>
+            <figure>
+                <img src="img/05-0301.gif" alt="The water flowing from pipes">
+                <figcaption>The water flowing from pipes</figcaption>
+            </figure>
+
+            <h4>Bank switching:</h4>
+            <h5>Shinobi</h5>
+            <figure>
+                <img src="img/05-0302.gif" alt="The ninja's eyes are tiles that change banks">
+                <figcaption>The ninja's eyes are tiles that change banks</figcaption>
+            </figure>
+
+            <h4>Parallax:</h4>
+            
+            <p>As with NES, backgrounds can also be sliced into horizontal fragments in order to create parallax effects:</p>
+
+            <h5>Renegade</h5>
+            <figure>
+                <img src="img/05-0303.gif" alt="Different bands scrolling at different speeds">
+                <figcaption>Different bands scrolling at different speeds</figcaption>
+            </figure>
+            
+            <p>Stop your bike right there and see this! We have something very interesting here: the upper section of the motorbike (the one which overlaps the brick wall area) are sprites, but the lower (the road gray area) is background!</p>
+
+            <figure>
+                <img src="img/05-0304.png" alt="Hey, you've sliced me in half!">
+                <figcaption>Hey, you've sliced me in half!</figcaption>
+            </figure>
+            
+            <figure>
+                <img src="img/05-0305.png" alt="Background tiles">
+                <figcaption>Background tiles</figcaption>
+            </figure>
+
+
+            <h4>Background overlapping sprites:</h4>
+            <h5>Wonder Boy III - The Dragon's Trap</h5>
+            <figure>
+                <img src="img/05-0306.gif" alt="Don't run and hide!">
+                <figcaption>Don't run and hide!</figcaption>
+            </figure>
+
+            <p>Well, that was a quick overview of some effects that can be generated by the SMS system. And like we did before, it's time for an overview of its graphical characteristics.</p>
+        </section>
+
+        <hr>
+
+        <h3>SMS GRAPHICAL FEATURES SUMMARY</h3>
+        <section>
+            <ul>
+                <li><strong>Graphics processor</strong>: VDP (<em>Video Display Processor</em>)</li>
+                <li><strong>Screen resolution</strong>: 256x192 (NTSC) and 256x224 (PAL) - true 4:3 aspect ratio.</li>
+                <li><strong>Colors</strong>: A total of 64 colors but only 32 on-screen at a time (16 for the sprites and 16 for the background). Background can use any of both palettes.</li>
+                <li><strong>Color depth</strong>: 4 bpp (4 bitplanes) - 16 colors per tile.</li>
+                <li><strong>Background</strong>:
+                    <ul>
+                        <li>Just one layer.</li>
+                        <li>1 nametable.</li>
+                        <li>32 colors: the own 16-color palette of the background and the other of the sprites.</li>
+                        <li>8x8 px tiles.</li>
+                        <li>The complete size is 896 tiles (32x28) for the 256x224 resolution. The number of tiles can vary - background can also use sprites tiles! - up to a maximum of 488 on screen.</li>
+                        <li>Tiles can be flipped horizontally and vertically but not rotated and must be aligned to the grid.</li>
+                        <li>Can be horizontally splitted into different bands with independent scrollings (but not vertically).</li>
+                        <li>Colors can be changed on the fly, swapping between different palettes (as an animation effect).</li>
+                        <li>Background tiles can be animated as alternatives for sprites.</li>
+                    </ul>
+                </li>
+                <li><strong>Sprites</strong>:
+                    <ul>
+                        <li>Just one layer.</li>
+                        <li>15 different colors plus transparency - can only use sprite's palette.</li>
+                        <li>8x8 px or 8x16 px tiles - only one size at a time.</li>
+                        <li>A single tile has 4 bytes defining position, tile index, palette and priority.</li>
+                        <li>Maximum of 8 tiles per horizontal scanline and a maximum of 64 on screen at the same time.</li>
+                        <li>Arbitrarily positioned - not bound to a grid.</li>
+                        <li>Sprites cannot be flipped nor rotated and can be overlapped by the background.</li>
+                        <li>Not affected by scrolling.</li>
+                        <li>Sprites can double their sizes, turning 8x8 into 16x16 and 8x16 into 16x32 - this mode doubles <em>all</em> sprites though.</li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+    </section>
+    
+    <hr>
+    <hr>
+
+    <h2>FINAL WORDS AND DOCUMENTATION</h2>
+    <section>
+        <p>Alas, it has taken quite a time to get here at last!</p>
+
+        <p>There's no much left to say except thank you for reading until now. Even though it took me several weeks - yes, <em>weeks</em> - to write and prepare all this, it was very fun, educative, amazing and mindopening. You can really learn a lot and admire the geniality of the engineers that brought the best out of the hardware. Also, emulators can be a little overwhelming at the beginning with so many features, but once you understand the terminology and how the systems work, they are a big source of help and field of exploration. We are lucky to have a lot of documentation available on Internet and, above everything, the happpiness of knowing that these classics games are still popular today.</p>
+        
+        <p>I hope you find this material useful and clarifying. If you find any errors in this document or just want to say "Hello!", you can <a href="mailto:rafikipedia17@gmail.com">send me an email</a>. I'll be glad to hear from you!</p>
+
+        <p>And at last but not least, I'd like to thank the authors of these articles for their clear and wonderful information:</p>
+        <ul>
+            <li><a href="https://bitbeamcannon.com/nes-graphical-specs/">NES Graphics Specs</a></li>
+            <li><a href="https://bitbeamcannon.com/sms-graphical-specs/">Sega Master System Graphics Specs</a></li>
+            <li><a href="https://www.cosmigo.com/promotion/docs/onlinehelp/gfxHardware-NES.htm">Nintendo Entertainment System - Graphical Summary</a></li>
+            <li><a href="https://www.cosmigo.com/promotion/docs/onlinehelp/gfxHardware-SMS.htm">Sega Master System - Graphical Summary</a></li>
+            <li><a href="https://www.dustmop.io/blog/2015/04/28/nes-graphics-part-1/">NES Graphics - Part 1</a></li>
+            <li><a href="https://www.dustmop.io/blog/2015/06/08/nes-graphics-part-2/">NES Graphics - Part 2</a></li>
+            <li><a href="https://www.dustmop.io/blog/2015/12/18/nes-graphics-part-3/">NES Graphics - Part 3</a></li>
+            <li><a href="https://www.romhacking.net/documents/118/">How NES Graphics Work</a> by <strong>yarbles</strong></li>
+            <li><a href="https://en.wikipedia.org/wiki/List_of_video_game_console_palettes">List of video game console palettes</a></li>
+            <li><a href="https://www.nesdev.org/wiki/Nesdev_Wiki">Nesdev Wiki</a></li>
+            <li><a href="https://www.emulationonline.com/systems/nes/">Emulation Online</a></li>
+            <li><a href="https://www.smspower.org/Development/Index">Sega Master System Documents</a></li>
+        </ul>
+
+        <p>Thanks again for your patience and see you around!</p>
+    </section>
+    
+    <footer>
+        <p><strong>RafikiPedia</strong> - &copy; 2025</p>
+    </footer>
+</body>
+</html>
